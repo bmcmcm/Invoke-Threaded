@@ -1,3 +1,4 @@
+
 $Scripts = Get-ChildItem "$($PSScriptRoot)\public-functions" | Select-Object -ExpandProperty FullName
 $Scripts += Get-ChildItem "$($PSScriptRoot)\private-functions" | Select-Object -ExpandProperty FullName
 
@@ -10,6 +11,6 @@ foreach ($script in $Scripts)
     }
     catch 
     {
-        Write-Verbose ("{0}: {1}" -f $script,$_.Exception.Message)
+        Write-Verbose ("{0}: {1}" -f $script,$_.Exception.Message) 
     }
 }
