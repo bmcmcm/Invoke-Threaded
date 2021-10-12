@@ -12,7 +12,7 @@
    System.Collections.Generic.Dictionary[string,object] disctionary of key,value pairs containing parameter names and values. See example below:
    $param = [System.Collections.Generic.Dictionary[string,object]]::new()
    $param.Add("Count",1)
-   translates to "-Count 1"
+   translates to "-Count 1" 
 .PARAMETER MaxThreads
    (Default=8, Min=1, Max=1000) Integer defining the maximum number of threads that will be created. Depending on the particular need, it can be beneficial
    to run a high number of threads; for example, pinging thousands of addresses where it is expected that most will time out. However, if the invoked 
