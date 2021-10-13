@@ -24,10 +24,23 @@ GUID = 'e1f149a5-b9c8-4995-be15-9efaa45d716f'
 Author = 'Brian McMahon'
 
 # Company or vendor of this module
-CompanyName = 'Unknown'
+CompanyName = ''
 
 # Copyright statement for this module
-Copyright = '(c) Brian McMahon. All rights reserved.'
+Copyright = '(c) Brian McMahon 2021
+
+This PowerShell module is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or 
+(at your option) any later version.
+
+This PowerShell module is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this PowerShell module. If not, see <https://www.gnu.org/licenses/>.'
 
 # Description of the functionality provided by this module
 # Description = ''
