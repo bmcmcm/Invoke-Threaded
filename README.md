@@ -9,14 +9,31 @@ Examples:
 
 Invoke-FunctionThreaded
 
-   $computers = Get-ADComputer -Filter *                                  #Get all computers in the domain
-   $param = [System.Collections.Generic.Dictionary[string,object]]::new() #Use a generic dictionary to supply additional parameters
-   $param.Add("Count",1)                                                  #repeat .Add as many times as nessessary to add all parameters
-   Invoke-FunctionThreaded "Test-Connection" $computers.name -ScriptParameters $param -MaxThreads 100 | Out-GridView #Invokes Test-Connection against the computer names collected
-   
 In this example, Test-Connection is iterated against all of the computer names, via 100 threads. The $param variable simply adds "-Count 1" to Test-Connection so that only one ping is made. Assuming there are 1000 computers and 50% of the computer names timed out on a Test-Connection, this will iterate through the computer pings many times faster than a serial foreach.
+
+   #Get all computers in the domain
+   $computers = Get-ADComputer -Filter *
+
+   #Use a generic dictionary to supply additional parameters
+   $param = [System.Collections.Generic.Dictionary[string,object]]::new()
+   #repeat .Add as many times as nessessary to add all parameters
+   $param.Add("Count",1)
+
+   #Invokes Test-Connection against the computer names collected
+   Invoke-FunctionThreaded "Test-Connection" $computers.name -ScriptParameters $param -MaxThreads 100 | Out-GridView
+   
 
 Invoke-ScriptThreaded
 
+In this example, test.ps1 is iterated against all of the computer names, via 8 threads (the default number). The output of anything returned is stored in $results.
+
+   #Hypothetical thread safe script path/file
+   $script = "C:\Scripts\test.ps1"
+
+   #Get all computers in the domain
    $computers = Get-ADComputer -Filter *
-   
+
+   #Invoke test.ps1 against the computer names collected
+   $results = Invoke-ScriptThreaded -ScriptFile $script -ScriptTargetList $computers.name
+
+
