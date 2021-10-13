@@ -179,6 +179,6 @@ function Invoke-FunctionThreaded
     $RunspacePool.Dispose() | Out-Null
 	$timeEnd = Get-Date
     Write-Verbose "Invocation End  : $timeEnd"
-    Write-Host "Elapsed Time    = $(New-TimeSpan -Start $timeStart -End $timeEnd)" -ForegroundColor Blue -BackgroundColor White
+    Write-Verbose "Elapsed Time    = $(New-TimeSpan -Start $timeStart -End $timeEnd)" -ForegroundColor Blue -BackgroundColor White
 	$JobResults 
 }
