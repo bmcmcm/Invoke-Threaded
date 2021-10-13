@@ -1,5 +1,5 @@
 # Invoke-Threaded
-PowerShell functions for invoking functions or scripts as threads. Invoke-Threaded functions work in PowerShell Core or Windows PowerShell. The Invoke-Threaded functions aren't more powerful than For-EachObject with -Parallel, however they may add some flexibility. Also, Foreach-Object -Parallel is not available in Windows PowerShell, it is only available in PowerShell Core.
+PowerShell functions for invoking functions or scripts as threads. Invoke-Threaded functions work in PowerShell Core or Windows PowerShell. The Invoke-Threaded functions aren't more powerful than For-EachObject with -Parallel, however they may add some flexibility. Foreach-Object -Parallel is not available in Windows PowerShell, it is only available in PowerShell Core.
 
 Invoke-Threaded is a module with two utility functions for invoking scripts or functions as threads. The function or script being invoked must accept argument 1 as the 'target' of the iteration. Additional parameters may be supplied as required. The loading of modules per thread session state is a supported parameter option, if required.
 
