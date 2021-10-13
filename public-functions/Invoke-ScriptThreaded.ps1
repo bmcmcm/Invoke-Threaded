@@ -5,8 +5,8 @@
    Invoke-ScriptThreaded invokes a supplied script name as threaded against a supplied list of script targets. All parameters needed by the script must be 
    supplied in a specific manner. The output of the invoked script threads will be returned upon completion of all threads as a PSCustomObject array. 
    The script being invoked must be written such that the target is positional parameter 1.
-.PARAMETER ScriptName
-   String name of the script that will be invoked on multiple threads
+.PARAMETER ScriptFile
+   String path+filename of the script that will be invoked on multiple threads
 .PARAMETER ScriptTargetList
    String array of target objects that will be iterated into threads. These objects should be the position 1 parameter for the invoked script.
 .PARAMETER ScriptParameters
@@ -32,13 +32,9 @@
    PowerShell ($env:PSModulePath -split ';'). Normally all of the modules in $env:PSModulePath are auto-loaded (so this parameter could be superflous), unless 
    $PSModuleAutoLoadingPreference is set to "None", or "ModuleQualified".
 .EXAMPLE
+   $script = "C:\Scripts\Test.ps1" 
    $computers = Get-ADComputer *
-   $param = [System.Collections.Generic.Dictionary[string,object]]::new()
-   $param.Add("Count",1)
-   Invoke-ScriptThreaded "Test-Connection" $computers -ScriptParameters $param -MaxThreads 100 | Out-GridView
-
-   $dirs = Get-ChildItem -Path "C:\Program Files" -Recurse -Directory
-   $results = Invoke-ScriptThreaded "Get-PathStorageUse" $dirs -ImportModulePath "E:\Powershell\Modules" 
+   Invoke-ScriptThreaded -ScriptFile $script -ScriptTargetList $computers | Out-GridView
 #>
 function Invoke-ScriptThreaded
 {
