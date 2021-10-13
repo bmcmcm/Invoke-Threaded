@@ -111,10 +111,10 @@ PrivateData = @{
         # Tags = @()
 
         # A URL to the license for this module.
-        # LicenseUri = ''
+        # LicenseUri = 'https://www.gnu.org/licenses/gpl-3.0.html'
 
         # A URL to the main website for this project.
-        # ProjectUri = ''
+        # ProjectUri = 'https://github.com/bmcmcm/Invoke-Threaded'
 
         # A URL to an icon representing this module.
         # IconUri = ''
