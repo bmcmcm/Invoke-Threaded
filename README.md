@@ -3,7 +3,7 @@ The Invoke-Threaded module contains two PowerShell functions for invoking functi
 
 Invoke-Threaded is a module with two utility functions for invoking scripts or functions as threads. The function or script being invoked must accept argument 1 as the 'target' of the iteration. Additional parameters may be supplied as required. The loading of modules per thread session state is a supported parameter option, if required.
 
-The Invoke-Threaded functions require that the function/commandlet or script being invoked is thread safe. The Invoke-Threaded functions will return what ever is returned by the function or thread. Therefore, it is best if the function or script being invoked will always return the same format of data no matter what happens in the function or script, otherwise jagged results may be returned. The Invoke-Threaded functions return a result object upon completion of all thread operations, not as the individual threads return results.
+The Invoke-Threaded functions require that the function/commandlet or script being invoked is thread-safe. The Invoke-Threaded functions will return what ever is returned by the function or thread. Therefore, it is best if the function or script being invoked will always return the same format of data no matter what happens in the function or script, otherwise jagged results may be returned. The Invoke-Threaded functions return a result object upon completion of all thread operations, not as the individual threads return results.
 
 # Examples:
 
@@ -30,7 +30,7 @@ Invoke-FunctionThreaded "Test-Connection" $computers.name -ScriptParameters $par
 In this example, test.ps1 is iterated against all of the computer names, via 8 threads (the default number). The output of anything returned is stored in $results.
 
 ```
-#Hypothetical thread safe script path/file
+#Hypothetical thread-safe script path/file
 $script = "C:\Scripts\test.ps1"
 
 #Get all computers in the domain
