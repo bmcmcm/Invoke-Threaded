@@ -21,8 +21,8 @@ $param = [System.Collections.Generic.Dictionary[string,object]]::new()
 #repeat .Add as many times as nessessary to add all parameters
 $param.Add("Count",1)
 
-#Invokes Test-Connection against the computer names collected
-Invoke-FunctionThreaded "Test-Connection" $computers.name -ScriptParameters $param -MaxThreads 100 | Out-GridView
+#Invokes Test-Connection against the computer names collected, adding function parameters, and altering MaxThreads to 100
+Invoke-FunctionThreaded "Test-Connection" $computers.name -FunctionParameters $param -MaxThreads 100 | Out-GridView
 ```
 
 ### Invoke-ScriptThreaded
