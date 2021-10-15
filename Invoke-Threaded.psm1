@@ -1,6 +1,6 @@
 
-$Scripts = Get-ChildItem "$($PWD.Path)\public-functions\*.ps1" | Select-Object -ExpandProperty FullName
-$Scripts += Get-ChildItem "$($PWD.Path)\private-functions\*.ps1" | Select-Object -ExpandProperty FullName
+$Scripts = Get-ChildItem "$($PSScriptRoot)\public-functions\*.ps1" | Select-Object -ExpandProperty FullName
+$Scripts += Get-ChildItem "$($PSScriptRoot)\private-functions\*.ps1" | Select-Object -ExpandProperty FullName
 
 foreach ($script in $Scripts)
 {
