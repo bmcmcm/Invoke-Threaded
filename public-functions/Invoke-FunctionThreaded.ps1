@@ -1,43 +1,40 @@
 <#
 .SYNOPSIS
-   Invokes a function as threaded against a list of function targets. 
+Invokes a function as threaded against a list of function targets. 
 .DESCRIPTION
-   Invoke-FunctionThreaded invokes a supplied function name as threaded against a supplied list of function targets. All parameters needed by the function must be 
-   supplied in a specific manner. The output of the invoked function threads will be returned upon completion of all threads as a PSCustomObject array. 
+Invoke-FunctionThreaded invokes a supplied function name as threaded against a supplied list of function targets. All parameters needed by the function must be supplied in a specific manner. The output of the invoked function threads will be returned upon completion of all threads as a PSCustomObject array. 
 .PARAMETER FunctionName
-   String name of the function that will be invoked on multiple threads
+String name of the function that will be invoked on multiple threads
 .PARAMETER FunctionTargetList
-   String array of target objects that will be iterated into threads. These objects should be the position 1 parameter for the invoked function.
+String array of target objects that will be iterated into threads. These objects should be the position 1 parameter for the invoked function.
 .PARAMETER FunctionParameters
-   System.Collections.Generic.Dictionary[string,object] disctionary of key,value pairs containing parameter names and values. See example below:
-   $param = [System.Collections.Generic.Dictionary[string,object]]::new()
-   $param.Add("Count",1)
-   translates to "-Count 1" 
-.PARAMETER MaxThreads
-   (Default=8, Min=1, Max=1000) Integer defining the maximum number of threads that will be created. Depending on the particular need, it can be beneficial
-   to run a high number of threads; for example, pinging thousands of addresses where it is expected that most will time out. However, if the invoked 
-   funtion will be doing any sort of lengthy processing, too many threads can cause processing overhead that unnecessarily lengthens the overall processing
-   time. Generally, the number of processor cores available is a good place to start.
-.PARAMETER ThreadWaitSleepTimerMs
-   (Default=200, Min=1, Max=1000000) Integer defining the wait time in milliseconds between polling for thread completion. 
-.PARAMETER MaxThreadWaitTimeSec
-   (Default=60, Min=1, Max=86400) Integer defining the wait time in seconds that an individual thread (job) will be allowed to run before it is forcably 
-   timed out. Take care when setting this parameter, too low of a value will potentially kill a thread before it is possible for it to complete.
-.PARAMETER ImportModulePath
-   String defining the directory path where all modules found will be loaded by each thread session. Do not specify a file, only the root path where the 
-   module(s) is/are located.
-.PARAMETER ImportModules
-   String array of module names to import into each thread session. Unlike ImportModulePath, these modules much be available from the default module path(s) for 
-   PowerShell ($env:PSModulePath -split ';'). Normally all of the modules in $env:PSModulePath are auto-loaded (so this parameter could be superflous), unless 
-   $PSModuleAutoLoadingPreference is set to "None", or "ModuleQualified".
-.EXAMPLE
-   $computers = Get-ADComputer *
-   $param = [System.Collections.Generic.Dictionary[string,object]]::new()
-   $param.Add("Count",1)
-   Invoke-FunctionThreaded "Test-Connection" $computers -FunctionParameters $param -MaxThreads 100 | Out-GridView
+System.Collections.Generic.Dictionary[string,object] disctionary of key,value pairs containing parameter names and values. See example below:
 
-   $dirs = Get-ChildItem -Path "C:\Program Files" -Recurse -Directory
-   $results = Invoke-FunctionThreaded "Get-PathStorageUse" $dirs -ImportModulePath "E:\Powershell\Modules" 
+$param = [System.Collections.Generic.Dictionary[string,object]]::new()
+$param.Add("Count",1)
+translates to "-Count 1" 
+.PARAMETER MaxThreads
+(Default=8, Min=1, Max=1000) Integer defining the maximum number of threads that will be created. Depending on the particular need, it can be beneficial to run a high number of threads; for example, pinging thousands of addresses where it is expected that most will time out. However, if the invoked function will be doing any sort of lengthy processing, too many threads can cause processing overhead that unnecessarily lengthens the overall processing time. Generally, the number of processor cores available is a good place to start.
+.PARAMETER ThreadWaitSleepTimerMs
+(Default=200, Min=1, Max=1000000) Integer defining the wait time in milliseconds between polling for thread completion. The default 200 represents polling for individual thread completion 5 times per second.
+.PARAMETER MaxThreadWaitTimeSec
+(Default=60, Min=1, Max=86400) Integer defining the wait time in seconds that an individual thread (job) will be allowed to run before it is forcably timed out. Take care when setting this parameter, too low of a value will potentially kill a thread before it is possible for it to complete.
+.PARAMETER ImportModulePath
+String defining the directory path where all modules found will be loaded by each thread session. Do not specify a file, only the root path where the module(s) is/are located.
+.PARAMETER ImportModules
+String array of module names to import into each thread session. Unlike ImportModulePath, these modules much be available from the default module path(s) for PowerShell ($env:PSModulePath -split ';'). Normally all of the modules in $env:PSModulePath are auto-loaded (so this parameter could be superflous), unless $PSModuleAutoLoadingPreference is set to "None", or "ModuleQualified".
+.EXAMPLE
+Invoke the Test-Connection function with "-Count 1" against all computer names in $computers:
+
+$computers = Get-ADComputer *
+$param = [System.Collections.Generic.Dictionary[string,object]]::new()
+$param.Add("Count",1)
+Invoke-FunctionThreaded "Test-Connection" $computers.name -FunctionParameters $param -MaxThreads 100 | Out-GridView
+.EXAMPLE
+Invoke custom function Get-PathStorageUse against all paths in $dirs and import all modules found in the path E:\Powershell\Modules\CalcFiles to each thread's session state:
+
+$dirs = Get-ChildItem -Path "C:\Program Files" -Recurse -Directory
+$results = Invoke-FunctionThreaded "Get-PathStorageUse" $dirs -ImportModulePath "E:\Powershell\Modules\CalcFiles" 
 #>
 function Invoke-FunctionThreaded
 {

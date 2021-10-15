@@ -14,9 +14,9 @@ $param = [System.Collections.Generic.Dictionary[string,object]]::new()
 $param.Add("Count",1)
 translates to a parameter "-Count 1"; add as many parameters as necessary via additional .Add
 .PARAMETER MaxThreads
-(Default=8, Min=1, Max=1000) Integer defining the maximum number of threads that will be created. Depending on the particular need, it can be beneficial to run a high number of threads; for example, pinging thousands of addresses where it is expected that most will time out. However, if the invoked funtion will be doing any sort of lengthy processing, too many threads can cause processing overhead that unnecessarily lengthens the overall processing time. Generally, the number of processor cores available is a good place to start.
+(Default=8, Min=1, Max=1000) Integer defining the maximum number of threads that will be created. Depending on the particular need, it can be beneficial to run a high number of threads; for example, pinging thousands of addresses where it is expected that most will time out. However, if the invoked function will be doing any sort of lengthy processing, too many threads can cause processing overhead that unnecessarily lengthens the overall processing time. Generally, the number of processor cores available is a good place to start.
 .PARAMETER ThreadWaitSleepTimerMs
-(Default=200, Min=1, Max=1000000) Integer defining the wait time in milliseconds between polling for thread completion. 
+(Default=200, Min=1, Max=1000000) Integer defining the wait time in milliseconds between polling for thread completion. The default 200 represents polling for individual thread completion 5 times per second.
 .PARAMETER MaxThreadWaitTimeSec
 (Default=60, Min=1, Max=86400) Integer defining the wait time in seconds that an individual thread (job) will be allowed to run before it is forcably timed out. Take care when setting this parameter, too low of a value will potentially kill a thread before it is possible for it to complete.
 .PARAMETER ImportModulePath
