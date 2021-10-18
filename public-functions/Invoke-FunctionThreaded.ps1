@@ -45,10 +45,10 @@ function Invoke-FunctionThreaded
 
         [Parameter(Mandatory=$false,Position=2)]
         [string[]]$FunctionTargetList,        
-        
+
         [Parameter(Mandatory=$false,Position=3)]
         [System.Collections.Generic.Dictionary[string,object]]$FunctionParameters,
-        
+
         [Parameter(Mandatory=$false,Position=4)]
         [ValidateRange(1,1000)]
         [int]$MaxThreads = 8,
@@ -60,13 +60,12 @@ function Invoke-FunctionThreaded
         [Parameter(Mandatory=$false,Position=6)]
         [ValidateRange(1,86400)]
         [int]$MaxThreadWaitTimeSec = 60, 
-        
+
         [Parameter(Mandatory=$false,Position=7)]
         [string]$ImportModulePath = "",
 
         [Parameter(Mandatory=$false,Position=8)]
         [string[]]$ImportModules = ""
-        
     )
 
     if ($MaxThreadWaitTimeSec -lt 10)
@@ -91,14 +90,14 @@ function Invoke-FunctionThreaded
     $RunspacePool = [runspacefactory]::CreateRunspacePool(1, $MaxThreads, $ISS, $host)
     $RunspacePool.Open()
 
-    $Jobs = @()
+    $Threads = @()
     $errorList = @()
     foreach ($item in $FunctionTargetList)
 	{    
         Write-Progress `
-            -Activity "Invoking $($FunctionTargetList.Count) jobs on $($MaxThreads) threads $($FunctionName): $($item)" `
-            -PercentComplete ($Jobs.count / $FunctionTargetList.Count * 100) `
-            -Status "Starting Job $($Jobs.count) of $($FunctionTargetList.Count)"
+            -Activity "$($FunctionTargetList.Count) iterationss on $($MaxThreads) threads $($FunctionName): $($item)" `
+            -PercentComplete ($Threads.count / $FunctionTargetList.Count * 100) `
+            -Status "Starting Job $($Threads.count) of $($FunctionTargetList.Count)"
         
         if ($FunctionParameters)
         {
@@ -118,10 +117,10 @@ function Invoke-FunctionThreaded
 		}
 		finally
 		{
-        	$job = "" | Select-Object Handle,Thread
-        	$job.Handle = $handle
-        	$job.Thread = $thread
-        	$Jobs += $job
+        	$row = "" | Select-Object Handle,Thread
+        	$row.Handle = $handle
+        	$row.Thread = $thread
+        	$Threads += $row
 		}
     }
     if ($errorList)
@@ -132,28 +131,28 @@ function Invoke-FunctionThreaded
             Write-Error $err
         }
     }  
-    Write-Verbose "All threads have been invoked, waiting on completion"
+    Write-Verbose "All threads have been invoked, job now waiting on thread completions"
 	$JobResults = @()
     $timeOutCheck = "" | Select-Object ID,FirstCheckTime
     $timeOutCheck.FirstCheckTime = Get-Date
-    $Jobs = $Jobs | Sort-Object -Property {$_.thread.InstanceId}
-    while (($Jobs | Where-Object {$_.Handle}).Count -gt 0)  
+    $Threads = $Threads | Sort-Object -Property {$_.thread.InstanceId}
+    while (($Threads | Where-Object {$_.Handle}).Count -gt 0)  
 	{    
-        $Remaining = "$($Jobs | Where-Object {$_.Handle.IsCompleted -eq $false})"
+        $Remaining = "$($Threads | Where-Object {$_.Handle.IsCompleted -eq $false})"
         if ($Remaining.Length -gt 60) { $Remaining = $Remaining.Substring(0,60) + "..." }
         Write-Progress `
-            -Activity "Waiting for Jobs: $($MaxThreads - $($RunspacePool.GetAvailableRunspaces())) of $MaxThreads threads running" `
-            -PercentComplete (($Jobs.count - $($($Jobs | Where-Object {$_.Handle.IsCompleted -eq $false}).count)) / $Jobs.Count * 100) `
-            -Status "$(@($($Jobs | Where-Object {$_.Handle.IsCompleted -eq $false})).count) remaining - $remaining" 
+            -Activity "Waiting for Threads: $($MaxThreads - $($RunspacePool.GetAvailableRunspaces())) of $MaxThreads threads running" `
+            -PercentComplete (($Threads.count - $($($Threads | Where-Object {$_.Handle.IsCompleted -eq $false}).count)) / $Threads.Count * 100) `
+            -Status "$(@($($Threads | Where-Object {$_.Handle.IsCompleted -eq $false})).count) remaining - $remaining" 
  
-        foreach ($Job in $($Jobs | Where-Object {$_.Handle.IsCompleted -eq $true}))
+        foreach ($thread in $($Threads | Where-Object {$_.Handle.IsCompleted -eq $true}))
 		{
-            $JobResults += $Job.Thread.EndInvoke($Job.Handle)
-            $Job.Thread.Dispose() | Out-Null
-            $Job.Thread = $null
-            $Job.Handle = $null
+            $JobResults += $thread.Thread.EndInvoke($thread.Handle)
+            $thread.Thread.Dispose() | Out-Null
+            $thread.Thread = $null
+            $thread.Handle = $null
         }
-        $waiting = $Jobs | Where-Object {$_.Handle.IsCompleted -eq $false} 
+        $waiting = $Threads | Where-Object {$_.Handle.IsCompleted -eq $false} 
         if ($waiting.Count -gt 1) {$waiting = $waiting[0]}
         if ($waiting.thread.InstanceId -eq $timeOutCheck.ID)
         {
@@ -169,13 +168,13 @@ function Invoke-FunctionThreaded
             $timeOutCheck.ID = $waiting.thread.InstanceId
             $timeOutCheck.FirstCheckTime = Get-Date
         }
-        if (($Jobs | Where-Object {$_.Handle}).Count -gt 0) {Start-Sleep -Milliseconds $ThreadWaitSleepTimerMs}   
+        if (($Threads | Where-Object {$_.Handle}).Count -gt 0) {Start-Sleep -Milliseconds $ThreadWaitSleepTimerMs}   
     }
-    Write-Verbose "All jobs received or timed out, RunspacePool will be disposed"
+    Write-Verbose "All thread results received or timed out, RunspacePool will be disposed"
     $RunspacePool.Close() | Out-Null
     $RunspacePool.Dispose() | Out-Null
 	$timeEnd = Get-Date
     Write-Verbose "Invocation End  : $timeEnd"
-    Write-Verbose "Elapsed Time    = $(New-TimeSpan -Start $timeStart -End $timeEnd)" -ForegroundColor Blue -BackgroundColor White
+    Write-Verbose "Elapsed Time    = $(New-TimeSpan -Start $timeStart -End $timeEnd)"
 	$JobResults 
 }
