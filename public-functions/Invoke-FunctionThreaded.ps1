@@ -18,7 +18,7 @@ translates to "-Count 1"
 .PARAMETER ThreadWaitSleepTimerMs
 (Default=200, Min=1, Max=1000000) Integer defining the wait time in milliseconds between polling for thread completion. The default 200 represents polling for individual thread completion 5 times per second.
 .PARAMETER MaxThreadWaitTimeSec
-(Default=60, Min=1, Max=86400) Integer defining the wait time in seconds that an individual thread (job) will be allowed to run before it is forcably timed out. Take care when setting this parameter, too low of a value will potentially kill a thread before it is possible for it to complete.
+(Default=60, Min=1, Max=86400) Integer defining the wait time in seconds that an individual thread will be allowed to run before it is forcably timed out. Take care when setting this parameter, too low of a value will potentially kill a thread before it is possible for it to complete.
 .PARAMETER ImportModulePath
 String defining the directory path where all modules found will be loaded by each thread session. Do not specify a file, only the root path where the module(s) is/are located.
 .PARAMETER ImportModules
@@ -95,9 +95,9 @@ function Invoke-FunctionThreaded
     foreach ($item in $FunctionTargetList)
 	{    
         Write-Progress `
-            -Activity "$($FunctionTargetList.Count) iterationss on $($MaxThreads) threads $($FunctionName): $($item)" `
+            -Activity "$($FunctionTargetList.Count) iterations on $($MaxThreads) threads $($FunctionName): $($item)" `
             -PercentComplete ($Threads.count / $FunctionTargetList.Count * 100) `
-            -Status "Starting Job $($Threads.count) of $($FunctionTargetList.Count)"
+            -Status "Starting $($Threads.count) of $($FunctionTargetList.Count)"
         
         if ($FunctionParameters)
         {
@@ -131,7 +131,7 @@ function Invoke-FunctionThreaded
             Write-Error $err
         }
     }  
-    Write-Verbose "All threads have been invoked, job now waiting on thread completions"
+    Write-Verbose "All threads have been invoked, waiting on thread completions"
 	$JobResults = @()
     $timeOutCheck = "" | Select-Object ID,FirstCheckTime
     $timeOutCheck.FirstCheckTime = Get-Date
@@ -141,7 +141,7 @@ function Invoke-FunctionThreaded
         $Remaining = "$($Threads | Where-Object {$_.Handle.IsCompleted -eq $false})"
         if ($Remaining.Length -gt 60) { $Remaining = $Remaining.Substring(0,60) + "..." }
         Write-Progress `
-            -Activity "Waiting for Threads: $($MaxThreads - $($RunspacePool.GetAvailableRunspaces())) of $MaxThreads threads running" `
+            -Activity "Waiting for threads: $($MaxThreads - $($RunspacePool.GetAvailableRunspaces())) of $MaxThreads threads running" `
             -PercentComplete (($Threads.count - $($($Threads | Where-Object {$_.Handle.IsCompleted -eq $false}).count)) / $Threads.Count * 100) `
             -Status "$(@($($Threads | Where-Object {$_.Handle.IsCompleted -eq $false})).count) remaining - $remaining" 
  

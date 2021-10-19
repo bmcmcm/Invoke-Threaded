@@ -18,7 +18,7 @@ translates to a parameter "-Count 1"; add as many parameters as necessary via ad
 .PARAMETER ThreadWaitSleepTimerMs
 (Default=200, Min=1, Max=1000000) Integer defining the wait time in milliseconds between polling for thread completion. The default 200 represents polling for individual thread completion 5 times per second.
 .PARAMETER MaxThreadWaitTimeSec
-(Default=60, Min=1, Max=86400) Integer defining the wait time in seconds that an individual thread (job) will be allowed to run before it is forcably timed out. Take care when setting this parameter, too low of a value will potentially kill a thread before it is possible for it to complete.
+(Default=60, Min=1, Max=86400) Integer defining the wait time in seconds that an individual thread will be allowed to run before it is forcably timed out. Take care when setting this parameter, too low of a value will potentially kill a thread before it is possible for it to complete.
 .PARAMETER ImportModulePath
 String defining the directory path where all modules found will be loaded by each thread session. Do not specify a file, only the root path where the module(s) is/are located.
 .PARAMETER ImportModules
@@ -88,14 +88,14 @@ function Invoke-ScriptThreaded
     $RunspacePool = [runspacefactory]::CreateRunspacePool(1, $MaxThreads, $ISS, $host)
     $RunspacePool.Open()
 
-    $Jobs = @()
+    $Threads = @()
     $errorList = @()
     foreach ($item in $ScriptTargetList)
 	{    
         Write-Progress `
-            -Activity "Invoking $($ScriptTargetList.Count) jobs on $($MaxThreads) threads: $($item)" `
-            -PercentComplete ($Jobs.count / $ScriptTargetList.Count * 100) `
-            -Status "Starting Job $($Jobs.count) of $($ScriptTargetList.Count)"
+            -Activity "Invoking $($ScriptTargetList.Count) Threads on $($MaxThreads) threads: $($item)" `
+            -PercentComplete ($Threads.count / $ScriptTargetList.Count * 100) `
+            -Status "Starting $($Threads.count) of $($ScriptTargetList.Count)"
         
         if ($ScriptParameters)
         {
@@ -115,10 +115,10 @@ function Invoke-ScriptThreaded
 		}
 		finally
 		{
-        	$job = "" | Select-Object Handle,Thread
-        	$job.Handle = $handle
-        	$job.Thread = $thread
-        	$Jobs += $job
+        	$row = "" | Select-Object Handle,Thread
+        	$row.Handle = $handle
+        	$row.Thread = $thread
+        	$Threads += $row
 		}
     }
     if ($errorList)
@@ -129,28 +129,28 @@ function Invoke-ScriptThreaded
             Write-Error $err
         }
     }  
-    Write-Verbose "All threads have been invoked, waiting on completion"
+    Write-Verbose "All threads have been invoked, waiting on completions"
 	$JobResults = @()
     $timeOutCheck = "" | Select-Object ID,FirstCheckTime
     $timeOutCheck.FirstCheckTime = Get-Date
-    $Jobs = $Jobs | Sort-Object -Property {$_.thread.InstanceId}
-    while (($Jobs | Where-Object {$_.Handle}).Count -gt 0)  
+    $Threads = $Threads | Sort-Object -Property {$_.thread.InstanceId}
+    while (($Threads | Where-Object {$_.Handle}).Count -gt 0)  
 	{    
-        $Remaining = "$($Jobs | Where-Object {$_.Handle.IsCompleted -eq $false})"
+        $Remaining = "$($Threads | Where-Object {$_.Handle.IsCompleted -eq $false})"
         if ($Remaining.Length -gt 60) { $Remaining = $Remaining.Substring(0,60) + "..." }
         Write-Progress `
-            -Activity "Waiting for Jobs: $($MaxThreads - $($RunspacePool.GetAvailableRunspaces())) of $MaxThreads threads running" `
-            -PercentComplete (($Jobs.count - $($($Jobs | Where-Object {$_.Handle.IsCompleted -eq $false}).count)) / $Jobs.Count * 100) `
-            -Status "$(@($($Jobs | Where-Object {$_.Handle.IsCompleted -eq $false})).count) remaining - $remaining" 
+            -Activity "Waiting for Threads: $($MaxThreads - $($RunspacePool.GetAvailableRunspaces())) of $MaxThreads threads running" `
+            -PercentComplete (($Threads.count - $($($Threads | Where-Object {$_.Handle.IsCompleted -eq $false}).count)) / $Threads.Count * 100) `
+            -Status "$(@($($Threads | Where-Object {$_.Handle.IsCompleted -eq $false})).count) remaining - $remaining" 
  
-        foreach ($Job in $($Jobs | Where-Object {$_.Handle.IsCompleted -eq $true}))
+        foreach ($thread in $($Threads | Where-Object {$_.Handle.IsCompleted -eq $true}))
 		{
-            $JobResults += $Job.Thread.EndInvoke($Job.Handle)
-            $Job.Thread.Dispose() | Out-Null
-            $Job.Thread = $null
-            $Job.Handle = $null
+            $JobResults += $thread.Thread.EndInvoke($thread.Handle)
+            $thread.Thread.Dispose() | Out-Null
+            $thread.Thread = $null
+            $thread.Handle = $null
         }
-        $waiting = $Jobs | Where-Object {$_.Handle.IsCompleted -eq $false} 
+        $waiting = $Threads | Where-Object {$_.Handle.IsCompleted -eq $false} 
         if ($waiting.Count -gt 1) {$waiting = $waiting[0]}
         if ($waiting.thread.InstanceId -eq $timeOutCheck.ID)
         {
@@ -166,7 +166,7 @@ function Invoke-ScriptThreaded
             $timeOutCheck.ID = $waiting.thread.InstanceId
             $timeOutCheck.FirstCheckTime = Get-Date
         }
-        if (($Jobs | Where-Object {$_.Handle}).Count -gt 0) {Start-Sleep -Milliseconds $ThreadWaitSleepTimerMs}   
+        if (($Threads | Where-Object {$_.Handle}).Count -gt 0) {Start-Sleep -Milliseconds $ThreadWaitSleepTimerMs}   
     }
     Write-Verbose "All threads received or timed out, RunspacePool will be disposed"
     $RunspacePool.Close() | Out-Null
