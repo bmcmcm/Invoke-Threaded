@@ -36,6 +36,9 @@ $script = "C:\Scripts\test.ps1"
 #Get all computers in the domain
 $computers = Get-ADComputer -Filter *
 
+$param = [System.Collections.Generic.Dictionary[string,object]]::new()
+$param.Add("Count",1)
+
 #Invoke test.ps1 against the computer names collected
 $results = Invoke-ScriptThreaded -ScriptFile $script -ScriptTargetList $computers.name
 $results | Out-GridView
