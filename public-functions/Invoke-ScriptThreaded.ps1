@@ -173,6 +173,6 @@ function Invoke-ScriptThreaded
     $RunspacePool.Dispose() | Out-Null
 	$timeEnd = Get-Date
     Write-Verbose "Invocation End  : $timeEnd"
-    Write-Verbose "Elapsed Time    = $(New-TimeSpan -Start $timeStart -End $timeEnd)" -ForegroundColor Blue -BackgroundColor White
+    Write-Verbose "Elapsed Time    = $(New-TimeSpan -Start $timeStart -End $timeEnd)"
 	$JobResults 
 }
