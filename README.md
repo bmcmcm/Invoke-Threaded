@@ -27,7 +27,7 @@ Invoke-FunctionThreaded "Test-Connection" $computers.name -FunctionParameters $p
 
 ### Invoke-ScriptThreaded
 
-In this example, test.ps1 is iterated against all of the computer names, via 8 threads (the default number). The output of anything returned is stored in $results.
+In this example, test.ps1 is iterated against all of the computer names, via 8 threads (the default number). Note that test.ps1 is hypothetically a script takes in one parameter from the pipline and returns a consistent result. In this example, the output of anything returned from test.ps1 is stored in $results.
 
 ```
 #Hypothetical thread-safe script path/file
@@ -38,4 +38,15 @@ $computers = Get-ADComputer -Filter *
 
 #Invoke test.ps1 against the computer names collected
 $results = Invoke-ScriptThreaded -ScriptFile $script -ScriptTargetList $computers.name
+$results | Out-GridView
+```
+
+### $test.ps1 example
+
+```
+Param(
+    [Parameter(Mandatory=$true,ValueFromPipeline = $true)]
+    [string]$ComputerName
+    
+return Test-Connection -ComputerName $ComputerName    
 ```
