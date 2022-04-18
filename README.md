@@ -40,16 +40,33 @@ $param = [System.Collections.Generic.Dictionary[string,object]]::new()
 $param.Add("Count",1)
 
 #Invoke test.ps1 against the computer names collected
-$results = Invoke-ScriptThreaded -ScriptFile $script -ScriptTargetList $computers.name
+$results = Invoke-ScriptThreaded -ScriptFile $script -ScriptTargetList $computers.name -ScriptParameters $param
 $results | Out-GridView
 ```
 
 ### $test.ps1 example
+What if the computer name didn't exist in the Invoke-FunctionThreaded example above? Either the results would be inconsistent with an error message in the middle of formatted results, or the result would be null, returning nothing. In either case, it wouldn't be clear which computer name was bad. Invoke-ScriptThreaded can take care of this problem if the target script is written to handle such issues.
 
 ```
 Param(
     [Parameter(Mandatory=$true,ValueFromPipeline = $true)]
-    [string]$ComputerName
-    
-return Test-Connection -ComputerName $ComputerName    
+    [string]$ComputerName,
+    [Parameter(Mandatory=$false,ValueFromPipeline = $false)]
+    [string]$Count = 3
+    )
+
+$returnResult = "" | Select-Object TargetName,TargetIPV4,PingTime
+$returnResult.TargetName = $ComputerName
+try  
+{  
+   $result = Test-Connection -ComputerName $ComputerName -Count $Count
+   $returnResult.TargetIPV4 = $result.IPV4Address
+   $returnResult.PingTime = $result.ResponseTime
+}
+catch
+{
+   $returnResult.TargetIPV4 = "Unresolved Name"
+   $returnResult.PingTime = "N/A"
+}
+return $returnResult
 ```
