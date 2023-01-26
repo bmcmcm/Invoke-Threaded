@@ -18,7 +18,7 @@ $computers = Get-ADComputer -Filter *
 #Use a generic dictionary to supply additional parameters
 $param = [System.Collections.Generic.Dictionary[string,object]]::new()
    
-#repeat .Add as many times as nessessary to add all parameters
+#repeat .Add as many times as necessary to add all parameters
 $param.Add("Count",1)
 
 #Invokes Test-Connection against the computer names collected, adding function parameters, and altering MaxThreads to 100
@@ -27,7 +27,7 @@ Invoke-FunctionThreaded "Test-Connection" $computers.name -FunctionParameters $p
 
 ### Invoke-ScriptThreaded
 
-In this example, test.ps1 is iterated against all of the computer names, via 8 threads (the default number). Note that test.ps1 is hypothetically a script takes in one parameter from the pipline and returns a consistent result. In this example, the output of anything returned from test.ps1 is stored in $results.
+In this example, test.ps1 is iterated against all of the computer names, via 8 threads (the default number). Note that test.ps1 is hypothetically a script takes in one parameter from the pipeline and returns a consistent result. In this example, the output of anything returned from test.ps1 is stored in $results.
 
 ```
 #Hypothetical thread-safe script path/file
