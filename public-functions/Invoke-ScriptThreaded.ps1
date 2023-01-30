@@ -32,33 +32,43 @@ Invoke-ScriptThreaded -ScriptFile $script -ScriptTargetList $computers.name | Ou
 #>
 function Invoke-ScriptThreaded
 {
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName = 'Path')]
     Param(
-        [Parameter(Mandatory=$true,Position=1)]
+        [Parameter(Mandatory=$true,ParameterSetName='Path',Position=1)]
         [string]$ScriptFile,
 
-        [Parameter(Mandatory=$false,Position=2)]
+        [Parameter(Mandatory=$true,ParameterSetName='ScriptBlock',Position=1)]
+        [string]$ScriptBlock,       
+
+        [Parameter(Mandatory=$false,ParameterSetName='Path',Position=2)]
+        [Parameter(Mandatory=$false,ParameterSetName='ScriptBlock',Position=2)]
         [string[]]$ScriptTargetList,        
         
-        [Parameter(Mandatory=$false,Position=3)]
+        [Parameter(Mandatory=$false,ParameterSetName='Path',Position=3)]
+        [Parameter(Mandatory=$false,ParameterSetName='ScriptBlock',Position=3)]
         [System.Collections.Generic.Dictionary[string,object]]$ScriptParameters,
         
-        [Parameter(Mandatory=$false,Position=4)]
+        [Parameter(Mandatory=$false,ParameterSetName='Path',Position=4)]
+        [Parameter(Mandatory=$false,ParameterSetName='ScriptBlock',Position=4)]
         [ValidateRange(1,1000)]
         [int]$MaxThreads = 8,
 
-        [Parameter(Mandatory=$false,Position=5)]
+        [Parameter(Mandatory=$false,ParameterSetName='Path',Position=5)]
+        [Parameter(Mandatory=$false,ParameterSetName='ScriptBlock',Position=5)]
         [ValidateRange(1,10000)]
         [int]$ThreadWaitSleepTimerMs = 200,
 
-        [Parameter(Mandatory=$false,Position=6)]
+        [Parameter(Mandatory=$false,ParameterSetName='Path',Position=6)]
+        [Parameter(Mandatory=$false,ParameterSetName='ScriptBlock',Position=6)]
         [ValidateRange(1,86400)]
         [int]$MaxThreadWaitTimeSec = 60, 
         
-        [Parameter(Mandatory=$false,Position=7)]
+        [Parameter(Mandatory=$false,ParameterSetName='Path',Position=7)]
+        [Parameter(Mandatory=$false,ParameterSetName='ScriptBlock',Position=7)]
         [string]$ImportModulePath = "",
 
-        [Parameter(Mandatory=$false,Position=8)]
+        [Parameter(Mandatory=$false,ParameterSetName='Path',Position=8)]
+        [Parameter(Mandatory=$false,ParameterSetName='ScriptBlock',Position=8)]
         [string[]]$ImportModules = ""
         
     )

@@ -1,14 +1,14 @@
 <#
 .SYNOPSIS
-Invokes a function as threaded against a list of function targets. 
+Invokes a public commandlet/function as threaded against a list of targets. 
 .DESCRIPTION
-Invoke-FunctionThreaded invokes a supplied function name as threaded against a supplied list of function targets. All parameters needed by the function must be supplied in a specific manner. The output of the invoked function threads will be returned upon completion of all threads as a PSCustomObject array. 
+Invoke-PublicFunctionThreaded invokes a supplied commandlet/function name as threaded against a supplied list of targets. The commandlet/function must be available by default in any new PowerShell session. For functions embedded in the current script, use Invoke-PrivateFunctionThreaded. All parameters needed by the function must be supplied in a specific manner. The output of the invoked script threads will be returned upon completion of all threads as a PSCustomObject array. 
 .PARAMETER FunctionName
-String name of the function that will be invoked on multiple threads
+String name of the commandlet/function that will be invoked on multiple threads
 .PARAMETER FunctionTargetList
-String array of target objects that will be iterated into threads. These objects should be the position 1 parameter for the invoked function.
+String array of target objects that will be iterated into threads. These objects should be the first parameter for the invoked script.
 .PARAMETER FunctionParameters
-System.Collections.Generic.Dictionary[string,object] disctionary of key,value pairs containing parameter names and values. See example below:
+System.Collections.Generic.Dictionary[string,object] dictionary of key,value pairs containing parameter names and values. See example below:
 
 $param = [System.Collections.Generic.Dictionary[string,object]]::new()
 $param.Add("Count",1)
@@ -29,14 +29,14 @@ Invoke the Test-Connection function with "-Count 1" against all computer names i
 $computers = Get-ADComputer *
 $param = [System.Collections.Generic.Dictionary[string,object]]::new()
 $param.Add("Count",1)
-Invoke-FunctionThreaded "Test-Connection" $computers.name -FunctionParameters $param -MaxThreads 100 | Out-GridView
+Invoke-PublicFunctionThreaded "Test-Connection" $computers.name -FunctionParameters $param -MaxThreads 100 | Out-GridView
 .EXAMPLE
 Invoke custom function Get-PathStorageUse against all paths in $dirs and import all modules found in the path E:\Powershell\Modules\CalcFiles to each thread's session state:
 
 $dirs = Get-ChildItem -Path "C:\Program Files" -Recurse -Directory
-$results = Invoke-FunctionThreaded "Get-PathStorageUse" $dirs -ImportModulePath "E:\Powershell\Modules\CalcFiles" 
+$results = Invoke-PublicFunctionThreaded "Get-PathStorageUse" $dirs -ImportModulePath "E:\Powershell\Modules\CalcFiles" 
 #>
-function Invoke-FunctionThreaded
+function Invoke-PublicFunctionThreaded
 {
     [CmdletBinding()]
     Param(

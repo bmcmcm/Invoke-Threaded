@@ -7,7 +7,7 @@ The Invoke-Threaded functions require that the function/commandlet or script bei
 
 # Examples:
 
-### Invoke-FunctionThreaded
+### Invoke-PublicFunctionThreaded
 
 In this example, Test-Connection is iterated against all of the computer names, via 100 threads. The $param variable simply adds "-Count 1" to Test-Connection so that only one ping is made. Assuming there are 1000 computers and 50% of the computer names timed out on a Test-Connection, this will iterate through the computer pings many times faster than a serial foreach.
 
@@ -25,7 +25,7 @@ $param.Add("Count",1)
 Invoke-FunctionThreaded "Test-Connection" $computers.name -FunctionParameters $param -MaxThreads 100 | Out-GridView
 ```
 
-### Invoke-ScriptThreaded
+### Invoke-ScriptFileThreaded
 
 In this example, test.ps1 is iterated against all of the computer names, via 8 threads (the default number). Note that test.ps1 is hypothetically a script takes in one parameter from the pipeline and returns a consistent result. In this example, the output of anything returned from test.ps1 is stored in $results.
 
@@ -45,7 +45,7 @@ $results | Out-GridView
 ```
 
 ### $test.ps1 example
-What if the computer name didn't exist in the Invoke-FunctionThreaded example above? Either the results would be inconsistent with an error message in the middle of formatted results, or the result would be null, returning nothing. In either case, it wouldn't be clear which computer name was bad. Invoke-ScriptThreaded can take care of this problem if the target script is written to handle such issues.
+What if the computer name didn't exist in the Invoke-FunctionThreaded example above? Either the results would be inconsistent with an error message in the middle of formatted results, or the result would be null, returning nothing. In either case, it wouldn't be clear which computer name was bad. Invoke-ScriptFileThreaded can take care of this problem if the target script is written to handle such issues.
 
 ```
 Param(
