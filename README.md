@@ -12,7 +12,15 @@ The Invoke-Threaded functions require that the commandlet/function or script bei
 ### Additional Information and Recommendations
 There is nothing particularly magical about using Invoke-Threaded, it is merely a way to avoid some of the overhead of threading in PowerShell. It is provided for convenience, there are many ways of accomplishing the same thing using other methods.
 
-Invoke-Threaded uses Runspace Pools which comes from System.Management.Automation.Runspaces. Each 'thread' is a PowerShell session, with all of the overhead that comes with launching a new session. For this reason, very short duration tasks with very little processing but a long wait times per iteration benefit the greatest. For example, pinging 10,000 computers with a 3 second timeout on 100 threads will cut the total run time down by quite a bit. Long, complex tasks that are using a lot of active processing and memory resources will benefit the least from threading and potentially could increase the overall run time.
+It should go without saying, but do not use Invoke-Threaded for any commandlet, function, or script that requires user interaction as this will lead to quick failure!
+
+Invoke-Threaded uses Runspace Pools which comes from System.Management.Automation.Runspaces. Each 'thread' is a hidden PowerShell session, with all of the overhead that comes with launching a new session. For this reason, very short duration tasks with very little processing but a long wait times per iteration benefit the greatest. For example, pinging 10,000 computers with a 3 second timeout on 100 threads will cut the total run time down by quite a bit. Long, complex tasks that are using a lot of active processing and memory resources will benefit the least from threading and potentially could increase the overall run time.
+
+For commandlets/functions that come from a module, the module must be installed by default for any new PowerShell session that is started on the host, or it may be supplied to Invoke-Threaded and it will be loaded by each session. Be aware that the load times for huge modules will not be reduced using Invoke-Threaded.
+
+Invoke-Threaded will treat local script functions as scriptblocks that will be sent into each 'thread' session.
+
+When straying from the parameter defaults for MaxThreads, test by gradually increasing/decreasing from the default of 8, for any script where the processing could be complex. A good rule is to start with the number of processor cores on the host. In cases where the constraint is disk access speed or network throughput, it could often be the case that reducing the number from 8 to 4, or even 3, will net better overall processing times. For something like port scans or pings, feel free to try hundreds of threads.
 
 # Examples:
 
