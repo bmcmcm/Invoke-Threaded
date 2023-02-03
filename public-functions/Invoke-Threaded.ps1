@@ -63,94 +63,95 @@ $dirs = Get-ChildItem -Path "C:\Program Files" -Recurse -Directory
 $results = Invoke-PublicFunctionThreaded "Get-PathStorageUse" $dirs -ImportModulePath "E:\Powershell\Modules\CalcFiles" 
 #>
 
-
-[CmdletBinding(DefaultParameterSetName = 'ScriptPath')]
-Param(
-    [Parameter(Mandatory=$true,ParameterSetName='ScriptPath',Position=1)]
-    [string]$ScriptFile,
-    [Parameter(Mandatory=$true,ParameterSetName='ScriptBlock',Position=1)]
-    [string]$ScriptBlock,
-    [Parameter(Mandatory=$true,ParameterSetName='FunctionName',Position=1)]
-    [string]$FunctionName,
-    
-    [Parameter(Mandatory=$true,ValueFromPipelineByPropertyName=$true,ParameterSetName='ScriptPath',Position=2)]
-    [Parameter(Mandatory=$true,ValueFromPipelineByPropertyName=$true,ParameterSetName='ScriptBlock',Position=2)]
-    [Parameter(Mandatory=$true,ValueFromPipelineByPropertyName=$true,ParameterSetName='FunctionName',Position=2)]
-    [System.Array[]]$TargetList,        
-    
-    [Parameter(Mandatory=$false,ParameterSetName='ScriptPath',Position=3)]
-    [Parameter(Mandatory=$false,ParameterSetName='ScriptBlock',Position=3)]
-    [Parameter(Mandatory=$false,ParameterSetName='FunctionName',Position=3)]
-    [System.Collections.Generic.Dictionary[string,object]]$ParametersToPass = "",
-    
-    [Parameter(Mandatory=$false,ParameterSetName='ScriptPath',Position=4)]
-    [Parameter(Mandatory=$false,ParameterSetName='ScriptBlock',Position=4)]
-    [Parameter(Mandatory=$false,ParameterSetName='FunctionName',Position=4)]
-    [ValidateRange(1,1000)]
-    [int]$MaxThreads = 8,
-
-    [Parameter(Mandatory=$false,ParameterSetName='ScriptPath',Position=5)]
-    [Parameter(Mandatory=$false,ParameterSetName='ScriptBlock',Position=5)]
-    [Parameter(Mandatory=$false,ParameterSetName='FunctionName',Position=5)]
-    [ValidateRange(1,10000)]
-    [int]$ThreadWaitSleepTimerMs = 200,
-
-    [Parameter(Mandatory=$false,ParameterSetName='ScriptPath',Position=6)]
-    [Parameter(Mandatory=$false,ParameterSetName='ScriptBlock',Position=6)]
-    [Parameter(Mandatory=$false,ParameterSetName='FunctionName',Position=6)]
-    [ValidateRange(1,86400)]
-    [int]$MaxThreadWaitTimeSec = 60, 
-    
-    [Parameter(Mandatory=$false,ParameterSetName='ScriptPath',Position=7)]
-    [Parameter(Mandatory=$false,ParameterSetName='ScriptBlock',Position=7)]
-    [Parameter(Mandatory=$false,ParameterSetName='FunctionName',Position=7)]
-    [string]$ImportModulePath = "",
-
-    [Parameter(Mandatory=$false,ParameterSetName='ScriptPath',Position=8)]
-    [Parameter(Mandatory=$false,ParameterSetName='ScriptBlock',Position=8)]
-    [Parameter(Mandatory=$false,ParameterSetName='FunctionName',Position=8)]
-    [string[]]$ImportModules = ""    
-)
-
-$ScriptToThread = ""
-$CommandToThread = ""
-
-if ($ScriptFile)
+function Invoke-Threaded
 {
-    $OFS = "`r`n"
-    $ScriptToThread = [ScriptBlock]::Create($(Get-Content $ScriptFile))
-    Remove-Variable OFS
-    if (!$ScriptToThread)
+    [CmdletBinding(DefaultParameterSetName = 'ScriptPath')]
+    Param(
+        [Parameter(Mandatory=$true,ParameterSetName='ScriptPath',Position=1)]
+        [string]$ScriptFile,
+        [Parameter(Mandatory=$true,ParameterSetName='ScriptBlock',Position=1)]
+        [string]$ScriptBlock,
+        [Parameter(Mandatory=$true,ParameterSetName='FunctionName',Position=1)]
+        [string]$FunctionName,
+        
+        [Parameter(Mandatory=$true,ValueFromPipelineByPropertyName=$true,ParameterSetName='ScriptPath',Position=2)]
+        [Parameter(Mandatory=$true,ValueFromPipelineByPropertyName=$true,ParameterSetName='ScriptBlock',Position=2)]
+        [Parameter(Mandatory=$true,ValueFromPipelineByPropertyName=$true,ParameterSetName='FunctionName',Position=2)]
+        [System.Array[]]$TargetList,        
+        
+        [Parameter(Mandatory=$false,ParameterSetName='ScriptPath',Position=3)]
+        [Parameter(Mandatory=$false,ParameterSetName='ScriptBlock',Position=3)]
+        [Parameter(Mandatory=$false,ParameterSetName='FunctionName',Position=3)]
+        [System.Collections.Generic.Dictionary[string,object]]$ParametersToPass = "",
+        
+        [Parameter(Mandatory=$false,ParameterSetName='ScriptPath',Position=4)]
+        [Parameter(Mandatory=$false,ParameterSetName='ScriptBlock',Position=4)]
+        [Parameter(Mandatory=$false,ParameterSetName='FunctionName',Position=4)]
+        [ValidateRange(1,1000)]
+        [int]$MaxThreads = 8,
+
+        [Parameter(Mandatory=$false,ParameterSetName='ScriptPath',Position=5)]
+        [Parameter(Mandatory=$false,ParameterSetName='ScriptBlock',Position=5)]
+        [Parameter(Mandatory=$false,ParameterSetName='FunctionName',Position=5)]
+        [ValidateRange(1,10000)]
+        [int]$ThreadWaitSleepTimerMs = 200,
+
+        [Parameter(Mandatory=$false,ParameterSetName='ScriptPath',Position=6)]
+        [Parameter(Mandatory=$false,ParameterSetName='ScriptBlock',Position=6)]
+        [Parameter(Mandatory=$false,ParameterSetName='FunctionName',Position=6)]
+        [ValidateRange(1,86400)]
+        [int]$MaxThreadWaitTimeSec = 60, 
+        
+        [Parameter(Mandatory=$false,ParameterSetName='ScriptPath',Position=7)]
+        [Parameter(Mandatory=$false,ParameterSetName='ScriptBlock',Position=7)]
+        [Parameter(Mandatory=$false,ParameterSetName='FunctionName',Position=7)]
+        [string]$ImportModulePath = "",
+
+        [Parameter(Mandatory=$false,ParameterSetName='ScriptPath',Position=8)]
+        [Parameter(Mandatory=$false,ParameterSetName='ScriptBlock',Position=8)]
+        [Parameter(Mandatory=$false,ParameterSetName='FunctionName',Position=8)]
+        [string[]]$ImportModules = ""    
+    )
+
+    $ScriptToThread = ""
+    $CommandToThread = ""
+
+    if ($ScriptFile)
     {
-        Write-Error -Message "Script file was not read, unable to continue."
-        return $null
-    }
-}
-
-if ($ScriptBlock)
-{
-    $ScriptToThread = $ScriptBlock
-}
-
-if ($FunctionName)
-{
-    $ScriptToThread = (Get-Command $FunctionName).ScriptBlock
-    if (!$ScriptToThread)
-    {
-        $CommandToThread = Get-Command $FunctionName
-        if (!$CommandToThread)
+        $OFS = "`r`n"
+        $ScriptToThread = [ScriptBlock]::Create($(Get-Content $ScriptFile))
+        Remove-Variable OFS
+        if (!$ScriptToThread)
         {
-            Write-Error "Function Name supplied not found, unable to continue."
+            Write-Error -Message "Script file was not read, unable to continue."
             return $null
         }
     }
-}
 
-if ($ScriptToThread)
-{
-    Invoke-RunspacePool -ScriptBlock $ScriptToThread -TargetList $TargetList -ParametersToPass $ParametersToPass -MaxThreads $MaxThreads -ThreadWaitSleepTimerMs $ThreadWaitSleepTimerMs -MaxThreadWaitTimeSec $MaxThreadWaitTimeSec -ImportModulePath $ImportModulePath -ImportModules $ImportModules
-} else {
-    Invoke-RunspacePool -Command $CommandToThread -TargetList $TargetList -ParametersToPass $ParametersToPass -MaxThreads $MaxThreads -ThreadWaitSleepTimerMs $ThreadWaitSleepTimerMs -MaxThreadWaitTimeSec $MaxThreadWaitTimeSec -ImportModulePath $ImportModulePath -ImportModules $ImportModules
-}
+    if ($ScriptBlock)
+    {
+        $ScriptToThread = $ScriptBlock
+    }
 
+    if ($FunctionName)
+    {
+        $ScriptToThread = (Get-Command $FunctionName).ScriptBlock
+        if (!$ScriptToThread)
+        {
+            $CommandToThread = Get-Command $FunctionName
+            if (!$CommandToThread)
+            {
+                Write-Error "Function Name supplied not found, unable to continue."
+                return $null
+            }
+        }
+    }
+
+    if ($ScriptToThread)
+    {
+        Invoke-RunspacePool -ScriptBlock $ScriptToThread -TargetList $TargetList -ParametersToPass $ParametersToPass -MaxThreads $MaxThreads -ThreadWaitSleepTimerMs $ThreadWaitSleepTimerMs -MaxThreadWaitTimeSec $MaxThreadWaitTimeSec -ImportModulePath $ImportModulePath -ImportModules $ImportModules
+    } else {
+        Invoke-RunspacePool -Command $CommandToThread -TargetList $TargetList -ParametersToPass $ParametersToPass -MaxThreads $MaxThreads -ThreadWaitSleepTimerMs $ThreadWaitSleepTimerMs -MaxThreadWaitTimeSec $MaxThreadWaitTimeSec -ImportModulePath $ImportModulePath -ImportModules $ImportModules
+    }
+}
 
