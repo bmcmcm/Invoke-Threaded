@@ -1,19 +1,21 @@
 # Invoke-Threaded
-The Invoke-Threaded module contains two PowerShell functions for invoking functions or scripts as threads and returning the results. Invoke-Threaded functions work in PowerShell Core or Windows PowerShell. The Invoke-Threaded functions aren't more powerful than For-EachObject with -Parallel, however they may add some flexibility. Foreach-Object -Parallel is not available in Windows PowerShell, it is only available in PowerShell Core.
+The Invoke-Threaded module contains a PowerShell function for invoking a script file (.ps1), scriptblock, or commandlet/function as threads against an array of supplied 'target objects' and then returning the collective results. Invoke-Threaded function works in PowerShell Core or Windows PowerShell. The Invoke-Threaded function isn't more powerful than For-EachObject with -Parallel, however it may add some flexibility (although For-EachObject -Parallel is not even available in Windows PowerShell).
 
-Invoke-Threaded is a module with two utility functions for invoking scripts or functions as threads. The function or script being invoked must accept argument 1 as the 'target' of the iteration. Additional parameters may be supplied as required. The loading of modules per thread session state is a supported parameter option, if required.
+The function or script being invoked must accept the objects from the array of supplied target object as the first (or default) argument. Additional parameters may be supplied as required via [System.Collections.Generic.Dictionary[string,object]], where they will be passed to the script file (.ps1), scriptblock, or commandlet/function as added parameters.
 
-The Invoke-Threaded functions require that the function/commandlet or script being invoked is thread-safe. The Invoke-Threaded functions will return what ever is returned by the function or thread. Therefore, it is best if the function or script being invoked will always return the same format of data no matter what happens in the function or script, otherwise jagged results may be returned. The Invoke-Threaded functions return a result object upon completion of all thread operations, not as the individual threads return results.
+The loading of modules per thread session state is a supported parameter option, if required. This would be a situation where the commandlet/function is not available by default to a new PowerShell session on the host (e.g. A custom PowerShell module that exists on the host, but is not currently installed on the host).
+
+The Invoke-Threaded functions require that the commandlet/funtion or script being invoked is thread-safe. The Invoke-Threaded will return an array of whatever is returned by a single execution of the supplied script file (.ps1), scriptblock, or commandlet/function. Therefore, it is best if the function or script being invoked will always return the same format of data no matter what happens in the function or script, otherwise jagged results may be returned. Invoke-Threaded function returns a result object upon completion of all thread operations, not an object per thread as the threads complete. Threads that fail due to a timeout will return null, thus completeness is not guaranteed.
 
 # Examples:
 
-### Invoke-PublicFunctionThreaded
+### Invoke-Threaded With A Commandlet
 
 In this example, Test-Connection is iterated against all of the computer names, via 100 threads. The $param variable simply adds "-Count 1" to Test-Connection so that only one ping is made. Assuming there are 1000 computers and 50% of the computer names timed out on a Test-Connection, this will iterate through the computer pings many times faster than a serial foreach.
 
 ```
 #Get all computers in the domain
-$computers = Get-ADComputer -Filter *
+$computers = (Get-ADComputer -Filter *).Name
 
 #Use a generic dictionary to supply additional parameters
 $param = [System.Collections.Generic.Dictionary[string,object]]::new()
@@ -22,10 +24,10 @@ $param = [System.Collections.Generic.Dictionary[string,object]]::new()
 $param.Add("Count",1)
 
 #Invokes Test-Connection against the computer names collected, adding function parameters, and altering MaxThreads to 100
-Invoke-FunctionThreaded "Test-Connection" $computers.name -FunctionParameters $param -MaxThreads 100 | Out-GridView
+$computers | Invoke-FunctionThreaded "Test-Connection" -ParametersToPass $param -MaxThreads 100 | Out-GridView
 ```
 
-### Invoke-ScriptFileThreaded
+### Invoke-Threaded With A Script File
 
 In this example, test.ps1 is iterated against all of the computer names, via 8 threads (the default number). Note that test.ps1 is hypothetically a script takes in one parameter from the pipeline and returns a consistent result. In this example, the output of anything returned from test.ps1 is stored in $results.
 
@@ -40,19 +42,19 @@ $param = [System.Collections.Generic.Dictionary[string,object]]::new()
 $param.Add("Count",1)
 
 #Invoke test.ps1 against the computer names collected
-$results = Invoke-ScriptThreaded -ScriptFile $script -ScriptTargetList $computers.name -ScriptParameters $param
+$results = Invoke-Threaded -ScriptFile $script -TargetList $computers.name -ParametersToPass $param
 $results | Out-GridView
 ```
 
 ### $test.ps1 example
-What if the computer name didn't exist in the Invoke-FunctionThreaded example above? Either the results would be inconsistent with an error message in the middle of formatted results, or the result would be null, returning nothing. In either case, it wouldn't be clear which computer name was bad. Invoke-ScriptFileThreaded can take care of this problem if the target script is written to handle such issues.
+What if the computer name didn't exist in the Invoke-Threaded example above? Either the results would be inconsistent with an error message in the middle of formatted results, or the result would be null, returning nothing. In either case, it wouldn't be clear which computer name failed. This problem can be avoided if the target script is written to handle such issues. For example, the script below returns the successes and failures:
 
 ```
 Param(
     [Parameter(Mandatory=$true,ValueFromPipeline = $true)]
     [string]$ComputerName,
     [Parameter(Mandatory=$false,ValueFromPipeline = $false)]
-    [string]$Count = 3
+    [string]$Count = 1
     )
 
 $returnResult = "" | Select-Object TargetName,TargetIPV4,PingTime
@@ -65,7 +67,7 @@ try
 }
 catch
 {
-   $returnResult.TargetIPV4 = "Unresolved Name"
+   $returnResult.TargetIPV4 = "Failed"
    $returnResult.PingTime = "N/A"
 }
 return $returnResult
