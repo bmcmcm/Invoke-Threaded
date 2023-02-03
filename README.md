@@ -1,11 +1,18 @@
 # Invoke-Threaded
+
+### Overview
 The Invoke-Threaded module contains a PowerShell function for invoking a script file (.ps1), scriptblock, or commandlet/function as threads against an array of supplied 'target objects' and then returning the collective results. Invoke-Threaded function works in PowerShell Core or Windows PowerShell. The Invoke-Threaded function isn't more powerful than For-EachObject with -Parallel, however it may add some flexibility (although For-EachObject -Parallel is not even available in Windows PowerShell).
 
 The function or script being invoked must accept the objects from the array of supplied target object as the first (or default) argument. Additional parameters may be supplied as required via [System.Collections.Generic.Dictionary[string,object]], where they will be passed to the script file (.ps1), scriptblock, or commandlet/function as added parameters.
 
 The loading of modules per thread session state is a supported parameter option, if required. This would be a situation where the commandlet/function is not available by default to a new PowerShell session on the host (e.g. A custom PowerShell module that exists on the host, but is not currently installed on the host).
 
-The Invoke-Threaded functions require that the commandlet/funtion or script being invoked is thread-safe. The Invoke-Threaded will return an array of whatever is returned by a single execution of the supplied script file (.ps1), scriptblock, or commandlet/function. Therefore, it is best if the function or script being invoked will always return the same format of data no matter what happens in the function or script, otherwise jagged results may be returned. Invoke-Threaded function returns a result object upon completion of all thread operations, not an object per thread as the threads complete. Threads that fail due to a timeout will return null, thus completeness is not guaranteed.
+The Invoke-Threaded functions require that the commandlet/function or script being invoked is thread-safe. The Invoke-Threaded will return an array of whatever is returned by a single execution of the supplied script file (.ps1), scriptblock, or commandlet/function. Therefore, it is best if the function or script being invoked will always return the same format of data no matter what happens in the function or script, otherwise jagged results may be returned. Invoke-Threaded function returns a result object upon completion of all thread operations, not an object per thread as the threads complete. Threads that fail due to a timeout will return null, thus completeness is not guaranteed.
+
+### Additional Information and Recommendations
+There is nothing particularly magical about using Invoke-Threaded, it is merely a way to avoid some of the overhead of threading in PowerShell. It is provided for convenience, there are many ways of accomplishing the same thing using other methods.
+
+Invoke-Threaded uses Runspace Pools which comes from System.Management.Automation.Runspaces. Each 'thread' is a PowerShell session, with all of the overhead that comes with launching a new session. For this reason, very short duration tasks with very little processing but a long wait times per iteration benefit the greatest. For example, pinging 10,000 computers with a 3 second timeout on 100 threads will cut the total run time down by quite a bit. Long, complex tasks that are using a lot of active processing and memory resources will benefit the least from threading and potentially could increase the overall run time.
 
 # Examples:
 
