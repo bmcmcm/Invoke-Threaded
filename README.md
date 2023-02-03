@@ -32,7 +32,19 @@ $computers | Invoke-FunctionThreaded "Test-Connection" -ParametersToPass $param 
 In this example, test.ps1 is iterated against all of the computer names, via 8 threads (the default number). Note that test.ps1 is hypothetically a script takes in one parameter from the pipeline and returns a consistent result. In this example, the output of anything returned from test.ps1 is stored in $results.
 
 ```
-#Hypothetical thread-safe script path/file
+#Hypothetical thread-safe script file called test.ps1:
+Param(
+    [Parameter(Mandatory=$true,ValueFromPipeline = $true)]
+    [string]$ComputerName,
+    [Parameter(Mandatory=$false,ValueFromPipeline = $false)]
+    [string]$Count = 1
+    )
+
+return Test-Connection -ComputerName $ComputerName -Count $Count
+```
+
+```
+#Invoke test.ps1 against all computers found in Active Directory
 $script = "C:\Scripts\test.ps1"
 
 #Get all computers in the domain
@@ -46,8 +58,8 @@ $results = Invoke-Threaded -ScriptFile $script -TargetList $computers.name -Para
 $results | Out-GridView
 ```
 
-### $test.ps1 example
-What if the computer name didn't exist in the Invoke-Threaded example above? Either the results would be inconsistent with an error message in the middle of formatted results, or the result would be null, returning nothing. In either case, it wouldn't be clear which computer name failed. This problem can be avoided if the target script is written to handle such issues. For example, the script below returns the successes and failures:
+### Revised $test.ps1 example
+What if the computer name wasn't resolvable in the test.ps1 example above? Either the results would be inconsistent with an error message in the middle of formatted results, or the result would be null, returning nothing per failure. In either case, it wouldn't be clear which computer name failed. This problem can be avoided if the target script is written to handle such issues. For example, the script below returns the successes and failures, creating a much better chance for completeness:
 
 ```
 Param(
