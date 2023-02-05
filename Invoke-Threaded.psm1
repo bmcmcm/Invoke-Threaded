@@ -1,4 +1,4 @@
-$Scripts = Get-ChildItem "$PWD\public-functions\*.ps1" | Select-Object -ExpandProperty FullName
+[string[]]$Scripts = Get-ChildItem "$PWD\public-functions\*.ps1" | Select-Object -ExpandProperty FullName
 $Scripts += Get-ChildItem "$PWD\private-functions\*.ps1" | Select-Object -ExpandProperty FullName
 foreach ($script in $Scripts)
 {
