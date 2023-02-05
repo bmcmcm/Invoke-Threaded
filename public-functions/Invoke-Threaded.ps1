@@ -154,4 +154,5 @@ function Invoke-Threaded
         Invoke-RunspacePool -Command $CommandToThread -TargetList $TargetList -ParametersToPass $ParametersToPass -MaxThreads $MaxThreads -ThreadWaitSleepTimerMs $ThreadWaitSleepTimerMs -MaxThreadWaitTimeSec $MaxThreadWaitTimeSec -ImportModulePath $ImportModulePath -ImportModules $ImportModules
     }
 }
+Export-ModuleMember -Function Invoke-Threaded
 
