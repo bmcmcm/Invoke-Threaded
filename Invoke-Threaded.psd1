@@ -43,7 +43,7 @@ You should have received a copy of the GNU General Public License
 along with this PowerShell module. If not, see <https://www.gnu.org/licenses/>.'
 
 # Description of the functionality provided by this module
-Description = 'The Invoke-Threaded module contains a PowerShell function for invoking a script file (.ps1), scriptblock, or commandlet/function as threads against an array of supplied 'target objects' and then returning the collective results.'
+Description = 'The Invoke-Threaded module contains a PowerShell function for invoking a script file (.ps1), scriptblock, or commandlet/function as threads against an array of supplied target objects and then returning the collective results.'
 
 # Minimum version of the PowerShell engine required by this module
 # PowerShellVersion = ''
