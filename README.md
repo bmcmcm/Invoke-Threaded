@@ -18,7 +18,7 @@ Invoke-Threaded uses Runspace Pools which comes from System.Management.Automatio
 
 For commandlets/functions that come from a module, the module must be installed by default for any new PowerShell session that is started on the host, or it may be supplied to Invoke-Threaded and it will be loaded by each session. Be aware that the load times for huge modules will not be reduced using Invoke-Threaded.
 
-Invoke-Threaded will treat local script functions as scriptblocks that will be sent into each 'thread' session. Anything the local function requires to run is required to be available in each 'thread' session. Don't send functions that reference some global variable, other local function(s), or an uninstalled module (unless you supply the parameters to import the module).
+For local script functions (those that are not in a default PowerShell session, but exist in script code only) use (Get-Command XXXXX).ScriptBlock and use Invoke-Threaded -ScriptBlock. Anything the local function requires to run is required to be available in each 'thread' session. Don't send functions that reference some global variable, other local function(s), or an uninstalled module (unless you supply the parameters to import the module).
 
 When straying from the parameter defaults for MaxThreads, test by gradually increasing/decreasing from the default of 8, for any script where the processing could be complex. A good rule is to start with the number of processor cores on the host. In cases where the constraint is disk access speed or network throughput, it could often be the case that reducing the number from 8 to 4, or even 3, will net better overall processing times. For something like port scans or pings, feel free to try hundreds of threads.
 
@@ -49,8 +49,8 @@ In this example, test.ps1 is iterated against all of the computer names, via 8 t
 ```
 #Hypothetical thread-safe script file called test.ps1:
 Param(
-    [Parameter(Mandatory=$true,ValueFromPipeline = $true)]
-    [string]$ComputerName,
+    [Parameter(Mandatory=$false,ValueFromPipeline = $true)]
+    [string]$ComputerName = 'localhost',
     [Parameter(Mandatory=$false,ValueFromPipeline = $false)]
     [string]$Count = 1
     )
@@ -78,8 +78,8 @@ What if the computer name wasn't resolvable in the test.ps1 example above? Eithe
 
 ```
 Param(
-    [Parameter(Mandatory=$true,ValueFromPipeline = $true)]
-    [string]$ComputerName,
+    [Parameter(Mandatory=$false,ValueFromPipeline = $true)]
+    [string]$ComputerName = 'localhost',
     [Parameter(Mandatory=$false,ValueFromPipeline = $false)]
     [string]$Count = 1
     )
