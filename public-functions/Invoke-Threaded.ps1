@@ -9,7 +9,7 @@ String containing the filename and a path of a .ps1 file to be invoked on multip
 .PARAMETER ScriptBlock
 String containing a scriptblock to be invoked on multiple threads.
 .PARAMETER FunctionName
-String name of the commandlet/function that will be invoked on multiple threads. If the function is local to the script calling Invoke-Threaded, it will be invoked as a scriptblock, otherwise it will be invoked as a command.
+String name of the commandlet/function that will be invoked on multiple threads. If the commandlet/function is not avilable to a new session, it will fail. Make sure to use ImportModules if needed, or for local functions use (Get-Command XXXXXX).ScriptBlock and send the function as a ScriptBlock.
 .PARAMETER TargetList
 Array of target objects that will be iterated into threads. The objects in the array must be accepted as the first (default) argument for the supplied script or commandlet/function.
 .PARAMETER ParametersToPass
