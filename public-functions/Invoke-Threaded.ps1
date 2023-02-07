@@ -191,9 +191,9 @@ function Invoke-Threaded
 
             if ($ParametersToPass)
             {
-                $thread = [powershell]::Create().AddCommand($Command).AddArgument($item).AddParameters($ParametersToPass)
+                $thread = [powershell]::Create().AddCommand($CommandToThread).AddArgument($item).AddParameters($ParametersToPass)
             } else {
-                $thread = [powershell]::Create().AddCommand($Command).AddArgument($item)
+                $thread = [powershell]::Create().AddCommand($CommandToThread).AddArgument($item)
             }
 
         }
