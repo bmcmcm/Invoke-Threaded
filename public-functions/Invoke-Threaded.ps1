@@ -3,7 +3,6 @@
 Invokes a PowerShell script file, scriptblock, or commandlet/function name as threaded against a list of targets. 
 .DESCRIPTION
 Invoke-Threaded invokes a supplied script file, scriptblock, or commandlet/function name as threaded against a supplied list of targets. A parameter set is used to differentiate between the three use cases. In addition to a script file, scriptblock, or commandlet/function name, an array of target objects to thread against must be passed; these objected will be used as the default arguement for the script or commandlet/function. Optionally, additional parameters for the script or commandlet/function may be supplied, as well as modules that would be required to import to each thread session (this is for a use case where the module is not already installed in default PowerShell sessions on the host).
-
 .PARAMETER ScriptFile
 String containing the filename and a path of a .ps1 file to be invoked on multiple threads
 .PARAMETER ScriptBlock
@@ -24,24 +23,16 @@ System.Collections.Generic.Dictionary[string,object] dictionary of key,value pai
 String defining the directory path where ALL modules found will be loaded by each thread session. Do not specify a filename, only the root path where the module(s) is/are located.
 .PARAMETER ImportModules
 String array of module names to import into each thread session. Unlike ImportModulePath, these modules much be available from the default module path(s) for PowerShell ($env:PSModulePath -split ';'). Normally all of the modules in $env:PSModulePath are auto-loaded (so this parameter could be superflous), unless $PSModuleAutoLoadingPreference is set to "None", or "ModuleQualified".
-
 .INPUTS
 Any whole list/array ocontaining the target list of objects to iterate into threads may pipelined to Invoke-Threaded
 .OUTPUTS
 Invoke-Threaded output depends on the supplied script, scriptblock, or commandlet/function. The output will be an array of whatever each thread returns.
-
 .EXAMPLE
 Invoke C:\Scripts\Test.ps1 against computer names in returned from Get-ADComputer:
 
 $scriptfile = "C:\Scripts\Test.ps1" 
 $computers = (Get-ADComputer -Filter *).Name
 Invoke-ScriptThreaded -ScriptFile $scriptfile -TargetList $computers
-
-This would also be acceptable:
-
-$scriptfile = "C:\Scripts\Test.ps1" 
-(Get-ADComputer -Filter *).Name | Invoke-ScriptThreaded -ScriptFile $scriptfile
-
 .EXAMPLE
 Invoke the Test-Connection function with "-Count 1" against computer names returned from Get-ADComputer:
 
@@ -49,13 +40,6 @@ $computers = (Get-ADComputer -Filter *).Name
 $param = [System.Collections.Generic.Dictionary[string,object]]::new()
 $param.Add("Count",1)
 Invoke-Threaded -FunctionName "Test-Connection" $computers -ParametersToPass $param -MaxThreads 100 | Out-GridView
-
-This would also be acceptable:
-
-$param = [System.Collections.Generic.Dictionary[string,object]]::new()
-$param.Add("Count",1)
-(Get-ADComputer -Filter *).Name | Invoke-Threaded -FunctionName "Test-Connection" -ParametersToPass $param -MaxThreads 100 | Out-GridView
-
 .EXAMPLE
 Invoke custom function Get-PathStorageUse against all paths in $dirs and import all modules found in the path E:\Powershell\Modules\CalcFiles to each thread's session state:
 
@@ -74,9 +58,9 @@ function Invoke-Threaded
         [Parameter(Mandatory=$true,ParameterSetName='FunctionName',Position=1)]
         [string]$FunctionName,
         
-        [Parameter(Mandatory=$true,ValueFromPipelineByPropertyName=$true,ParameterSetName='ScriptPath',Position=2)]
-        [Parameter(Mandatory=$true,ValueFromPipelineByPropertyName=$true,ParameterSetName='ScriptBlock',Position=2)]
-        [Parameter(Mandatory=$true,ValueFromPipelineByPropertyName=$true,ParameterSetName='FunctionName',Position=2)]
+        [Parameter(Mandatory=$true,ParameterSetName='ScriptPath',Position=2)]
+        [Parameter(Mandatory=$true,ParameterSetName='ScriptBlock',Position=2)]
+        [Parameter(Mandatory=$true,ParameterSetName='FunctionName',Position=2)]
         [System.Array]$TargetList,        
         
         [Parameter(ParameterSetName='ScriptPath',Position=3)]
@@ -173,7 +157,7 @@ function Invoke-Threaded
     foreach ($item in $TargetList)
 	{    
         Write-Progress `
-            -Activity "$($TargetList.Count) iterations on $($MaxThreads) threads $($Command): $($item)" `
+            -Activity "$($TargetList.Count) iterations on $($MaxThreads) threads $($InvokeType): $($item)" `
             -PercentComplete ($Threads.count / $TargetList.Count * 100) `
             -Status "Starting $($Threads.count) of $($TargetList.Count)"
 
