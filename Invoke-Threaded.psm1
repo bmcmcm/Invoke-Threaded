@@ -1,5 +1,9 @@
-[string[]]$Scripts = Get-ChildItem "$PWD\public-functions\*.ps1" | Select-Object -ExpandProperty FullName
-$Scripts += Get-ChildItem "$PWD\private-functions\*.ps1" | Select-Object -ExpandProperty FullName
+$pub = (Join-Path $PSScriptRoot -ChildPath "public-functions")
+$priv = = (Join-Path $PSScriptRoot -ChildPath "private-functions")
+
+[string[]]$Scripts = Get-ChildItem -File -Recurse -LiteralPath $pub -Filter *.ps1 | Select-Object -ExpandProperty FullName
+$Scripts += Get-ChildItem -File -Recurse -LiteralPath $priv -Filter *.ps1 | Select-Object -ExpandProperty FullName
+
 foreach ($script in $Scripts)
 {
     try 
